@@ -1,9 +1,9 @@
 'use client';
 import { createContext, useContext } from 'react';
 
-const PromiseContext = createContext<Promise<any> | null>(null);
+const PromiseContext = createContext<TeamType | undefined>(undefined);
 
-export const usePromise = () => {
+export const useRosterPromise = () => {
 	const roster = useContext(PromiseContext);
 	if (!roster)
 		throw new Error('usePromise must be used within a PromiseProvider');
@@ -15,7 +15,7 @@ const RosterProvider = ({
 	rosterPromise
 }: {
 	children: React.ReactNode;
-	rosterPromise: Promise<any>;
+	rosterPromise: TeamType | undefined;
 }) => {
 	return (
 		<PromiseContext.Provider value={rosterPromise}>

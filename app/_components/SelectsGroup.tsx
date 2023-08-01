@@ -1,34 +1,49 @@
 'use client';
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { usePromise } from './PromiseProvider';
+import { useEffect, useState } from 'react';
+import RosterProvider, { useRosterPromise } from './PromiseProvider';
 import DraftYearSelect from './DraftYearSelect';
+import TeamsSelect from './TeamsSelect';
+import getNHLYears from '../_lib/getCurrentYear';
+import { useQuery } from '@tanstack/react-query';
+import useRosters from '../_lib/useRosters';
+import PlayerSelect from './PlayerSelect';
 
 interface SelectsGroupProps {}
 
 const SelectsGroup = ({}) => {
-	const [draftYear, setDraftYear] = useState<string | null>(null);
-	const rosterPromise = usePromise();
+	const dates = getNHLYears();
+	const [draftYear, setDraftYear] = useState<string>(dates[0].replace('-', ''));
+	const [currentTeam, setCurrentTeam] = useState<string>('');
+
+	useEffect(() => {
+		setCurrentTeam('');
+	}, [draftYear]);
+
+	const rosterReq = useRosters(draftYear);
 	const { data: roster, isFetching } = useQuery(
-		['roster'],
-		() => rosterPromise
+		['roster', draftYear],
+		() => rosterReq
 	);
-
-	if (isFetching)
-		return (
-			<select className='text-black w-1/4'>
-				<option value=''>Loading...</option>
-			</select>
-		);
-
-	console.log(roster);
 
 	return (
-		<div>
+		// <RosterProvider rosterPromise={roster}>
+		<div className='flex flex-row gap-3'>
 			<DraftYearSelect setter={setDraftYear} />
-			<select></select>
+			{isFetching ? (
+				<select className='text-black'>
+					<option value=''>Pick a Team...</option>
+				</select>
+			) : (
+				<TeamsSelect data={roster} setter={setCurrentTeam} />
+			)}
+			<PlayerSelect data={roster} currentTeam={currentTeam} />
 		</div>
 	);
+	{
+		/* </RosterProvider> */
+	}
+	{
+	}
 };
 
 export default SelectsGroup;
